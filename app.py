@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from routes.auth import auth_bp
 from routes.diary_routes import diary_bp
 from routes.music_routes import music_bp
-from routes.dashboard import dashboard_bp
 from routes.public import public_bp
 
 
@@ -43,7 +42,6 @@ db = firestore.client()
 app.register_blueprint(auth_bp)
 app.register_blueprint(diary_bp, url_prefix='/api/diary')
 app.register_blueprint(music_bp, url_prefix='/api/music')
-app.register_blueprint(dashboard_bp)
 app.register_blueprint(public_bp)
 
 
