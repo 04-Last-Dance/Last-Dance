@@ -1,26 +1,21 @@
-# /BE/routes/music_routes.py
-
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
 music_bp = Blueprint('music', __name__)
 
 # Spotify API 설정
-SPOTIFY_CLIENT_ID = 'ceed4f973932401db4c3145c4b8c4bd4'
-SPOTIFY_CLIENT_SECRET = '160fad0db2c942b7a76a541ebb61fd52'
-SPOTIFY_REDIRECT_URI = 'https://595f-211-244-170-176.ngrok-free.app/callback'
-
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
-    client_id=SPOTIFY_CLIENT_ID,
-    client_secret=SPOTIFY_CLIENT_SECRET,
-    redirect_uri=SPOTIFY_REDIRECT_URI,
-    scope='user-read-private'
-))
-
-
+def get_spotify_client():
+    """현재 애플리케이션의 설정에서 Spotify 클라이언트를 생성하는 함수"""
+    return spotipy.Spotify(auth_manager=SpotifyOAuth(
+        client_id=current_app.config['SPOTIFY_CLIENT_ID'],
+        client_secret=current_app.config['SPOTIFY_CLIENT_SECRET'],
+        redirect_uri=current_app.config['SPOTIFY_REDIRECT_URI'],
+        scope='user-read-private'
+    ))
 
 def search_spotify_tracks(query, limit=5):
+    sp = get_spotify_client()
     results = sp.search(q=query, type='track', limit=limit)
     tracks = []
     for item in results['tracks']['items']:
