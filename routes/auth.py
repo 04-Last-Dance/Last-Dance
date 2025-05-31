@@ -32,7 +32,7 @@ def authorize():
         
     
 
-        return redirect(url_for('dashboard.dashboard'))
+        return redirect(url_for('public.dashboard'))
     except Exception as e:
         print(f"Authentication error: {e}")
         return "Unauthorized", 401
