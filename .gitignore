@@ -6,7 +6,6 @@
 **/node_modules/*
 **/.firebaserc
 
-
 ### Firebase Patch ###
 .runtimeconfig.json
 .firebase/
@@ -203,4 +202,3 @@ pyrightconfig.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,firebase,visualstudiocode
-firebase-auth.json
