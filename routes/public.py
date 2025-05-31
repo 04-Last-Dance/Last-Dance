@@ -10,13 +10,13 @@ def home():
 @public_bp.route('/login')
 def login():
     if 'user' in session:
-        return redirect(url_for('dashboard.dashboard'))
+        return redirect(url_for('public.dashboard'))
     return render_template('login.html')
 
 @public_bp.route('/signup')
 def signup():
     if 'user' in session:
-        return redirect(url_for('dashboard.dashboard'))
+        return redirect(url_for('public.dashboard'))
     return render_template('signup.html')
 
 @public_bp.route('/logout')
