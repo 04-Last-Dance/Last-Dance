@@ -8,7 +8,7 @@ from routes.auth import auth_bp
 from routes.diary_routes import diary_bp
 from routes.music_routes import music_bp
 from routes.public import public_bp
-
+from routes.profile import profile_bp
 
 from spotipy.oauth2 import SpotifyOAuth
 from config.settings import configure_app
@@ -43,6 +43,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(diary_bp, url_prefix='/api/diary')
 app.register_blueprint(music_bp, url_prefix='/api/music')
 app.register_blueprint(public_bp)
+app.register_blueprint(profile_bp)
 
 
 
