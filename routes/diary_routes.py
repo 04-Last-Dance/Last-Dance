@@ -5,7 +5,7 @@ from transformers import pipeline
 
 # Firebase 초기화 (중복 방지)
 if not firebase_admin._apps:
-    cred = credentials.Certificate('BE/firebase-key.json')
+    cred = credentials.Certificate('firebase-key.json')
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
