@@ -1,40 +1,158 @@
+<!-- 배경 및 기능 추가-->
 <!DOCTYPE html>
 <html lang="kr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Last Dance -임시 홈페이지</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            text-align: center;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px;
-            background-color: #4285f4;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .button:hover {
-            background-color: #3367d6;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Last Dance - 임시 홈페이지</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
 </head>
 <body>
-    <h1>Last Dance -임시 홈페이지</h1>
-    <p>나의 감정을 일기로 작성하고, 감정에 맞는 음악을 추천받으세요!</p>
-    
-    <div>
-        <a href="{{ url_for('public.login') }}" class="button">로그인</a>
-        <a href="{{ url_for('public.signup') }}" class="button">회원가입</a>
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Music notes -->
+  <div class="music-notes" id="musicNotes"></div>
+
+  <div class="container">
+    <h1>Last Dance</h1>
+    <p class="subtitle">
+      나의 감정을 일기로 작성하고, 감정에 맞는 음악을 추천받으세요!<br>
+      <small>당신의 마음을 담은 특별한 순간들을 기억하세요 ✨</small>
+    </p>
+
+    <div class="emotion-preview">
+      <div class="emotion-icon" title="행복">😊</div>
+      <div class="emotion-icon" title="평온">😌</div>
+      <div class="emotion-icon" title="사랑">💕</div>
+      <div class="emotion-icon" title="그리움">🌙</div>
+      <div class="emotion-icon" title="희망">🌟</div>
     </div>
+
+    <div class="buttons">
+      <a href="{{ url_for('public.login') }}" class="button">로그인</a>
+      <a href="{{ url_for('public.signup') }}" class="button">회원가입</a>
+    </div>
+  </div>
+
+  <script>
+    // Floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Floating music notes
+    function createMusicNotes() {
+      const musicNotesContainer = document.getElementById('musicNotes');
+      const notes = ['♪', '♫', '♬', '♭', '♯'];
+      
+      setInterval(() => {
+        if (Math.random() < 0.3) {
+          const note = document.createElement('div');
+          note.className = 'note';
+          note.textContent = notes[Math.floor(Math.random() * notes.length)];
+          note.style.left = Math.random() * 100 + '%';
+          note.style.animationDuration = (Math.random() * 3 + 5) + 's';
+          musicNotesContainer.appendChild(note);
+          
+          setTimeout(() => {
+            note.remove();
+          }, 8000);
+        }
+      }, 2000);
+    }
+
+    // Emotion icon hover and click
+    function addEmotionEffects() {
+      const emotions = document.querySelectorAll('.emotion-icon');
+      emotions.forEach(emotion => {
+        emotion.addEventListener('mouseenter', () => {
+          emotion.style.transform = 'scale(1.3) rotate(15deg)';
+        });
+        
+        emotion.addEventListener('mouseleave', () => {
+          emotion.style.transform = 'scale(1) rotate(0deg)';
+        });
+        
+        emotion.addEventListener('click', () => {
+          emotion.classList.add('pulse');
+          setTimeout(() => {
+            emotion.classList.remove('pulse');
+          }, 2000);
+        });
+      });
+    }
+
+    // Button ripple effect
+    function addRippleEffect() {
+      const buttons = document.querySelectorAll('.button');
+      buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = button.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+          `;
+          
+          button.appendChild(ripple);
+          
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
+        });
+      });
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes ripple {
+          to {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Mouse parallax effect
+    document.addEventListener('mousemove', (e) => {
+      const container = document.querySelector('.container');
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = (e.clientY / window.innerHeight) * 2 - 1;
+      container.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+    });
+
+    // Init all
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+      createMusicNotes();
+      addEmotionEffects();
+      addRippleEffect();
+    });
+  </script>
 </body>
 </html>
