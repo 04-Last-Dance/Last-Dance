@@ -204,3 +204,4 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,firebase,visualstudiocode
 firebase-auth.json
+프로젝트*
