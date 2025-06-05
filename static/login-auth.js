@@ -3,8 +3,6 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signInWithPopup,
-    GoogleAuthProvider,  // 직접 import
-    getAuth  // 직접 import
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 // Firebase 인스턴스를 담을 변수
@@ -210,7 +208,20 @@ async function loginUser(user, idToken) {
         });
 
         if (response.ok) {
-            window.location.href = '/dashboard';
+            //iframe에서 실행 중인지 확인
+            if (window.parent !== window) {
+                //홈페이지에 인증 성공 메시지 전송
+                window.parent.postMessage({
+                    type: 'AUTH_SUCCESS',
+                    user: {
+                        uid: user.uid,
+                        email: user.email
+                    }
+                }, '*');
+            } else {
+                // 기존: 직접 페이지 접근인 경우
+                window.location.href = '/dashboard';
+            }
         } else {
             console.error('Failed to authenticate with backend');
             if (errorMsgPassword) {
