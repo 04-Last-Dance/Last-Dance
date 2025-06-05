@@ -22,7 +22,7 @@ def signup():
 @public_bp.route('/logout')
 def logout():
     session.pop('user', None)
-    response = make_response(redirect(url_for('public.login')))
+    response = make_response(redirect(url_for('public.home')))
     response.set_cookie('session', '', expires=0)
     return response
 
