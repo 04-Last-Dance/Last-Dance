@@ -13,7 +13,6 @@ from routes.profile import profile_bp
 from spotipy.oauth2 import SpotifyOAuth
 from config.settings import configure_app
 
-
 # .env 파일 로드
 load_dotenv()
 print(f"SPOTIFY_CLIENT_ID from app: {os.getenv('SPOTIFY_CLIENT_ID')}")
@@ -36,16 +35,12 @@ except Exception as e:
 # Firestore 클라이언트
 db = firestore.client()
 
-
-
 # 블루프린트 등록
 app.register_blueprint(auth_bp)
 app.register_blueprint(diary_bp, url_prefix='/api/diary')
 app.register_blueprint(music_bp, url_prefix='/api/music')
 app.register_blueprint(public_bp)
 app.register_blueprint(profile_bp)
-
-
 
 # Firebase 설정 반환 엔드포인트
 @app.route('/api/firebase-config')
