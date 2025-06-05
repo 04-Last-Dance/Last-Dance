@@ -1,4 +1,3 @@
-<!-- 배경 및 기능 추가-->
 <!DOCTYPE html>
 <html lang="kr">
 <head>
@@ -22,11 +21,11 @@
     </p>
 
     <div class="emotion-preview">
-      <div class="emotion-icon" title="행복">😊</div>
-      <div class="emotion-icon" title="평온">😌</div>
-      <div class="emotion-icon" title="사랑">💕</div>
-      <div class="emotion-icon" title="그리움">🌙</div>
-      <div class="emotion-icon" title="희망">🌟</div>
+      <div class="emotion-icon" data-emotion="happy" data-song="Happy Song" title="행복">😊</div>
+      <div class="emotion-icon" data-emotion="calm" data-song="Peaceful Melody" title="평온">😌</div>
+      <div class="emotion-icon" data-emotion="love" data-song="Love Ballad" title="사랑">💕</div>
+      <div class="emotion-icon" data-emotion="nostalgic" data-song="Moonlight Sonata" title="그리움">🌙</div>
+      <div class="emotion-icon" data-emotion="hopeful" data-song="Starlight Dreams" title="희망">🌟</div>
     </div>
 
     <div class="buttons">
@@ -35,7 +34,74 @@
     </div>
   </div>
 
+  <!-- Audio Controls -->
+  <div class="audio-controls" id="audioControls">
+    <div class="audio-info">
+      <span class="audio-emoji" id="currentEmoji">🎵</span>
+      <span class="audio-title" id="currentSong">음악을 선택해주세요</span>
+    </div>
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="audio-player">
+      <button class="play-pause-btn" id="playPauseBtn">▶️</button>
+      <div class="volume-control">
+        <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">🔊</span>
+        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+      </div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+  </div>
+
+  <!-- Hidden audio elements -->
+  <audio id="audioPlayer"></audio>
+
   <script>
+    // Audio management
+    const audioPlayer = document.getElementById('audioPlayer');
+    const audioControls = document.getElementById('audioControls');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const progressBar = document.getElementById('progressBar');
+    const progressContainer = document.getElementById('progressContainer');
+    const currentEmoji = document.getElementById('currentEmoji');
+    const currentSong = document.getElementById('currentSong');
+    const closeBtn = document.getElementById('closeBtn');
+
+    // Sample audio files (replace with your actual mp3 files)
+    const emotionSounds = {
+      happy: {
+        src: 'static/audio/sumu - apart.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: 'sumu - apart',
+        emoji: '😊'
+      },
+      calm: {
+        src: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: 'Peaceful Ambient',
+        emoji: '😌'
+      },
+      love: {
+        src: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: 'Romantic Ballad',
+        emoji: '💕'
+      },
+      nostalgic: {
+        src: 'static/audio/포켓몬스터 블랙 화이트 OST-흔들리지 않는 마음.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: '흔들리지 않는 마음',
+        emoji: '🌙'
+      },
+      hopeful: {
+        src: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: 'Inspiring Orchestra',
+        emoji: '🌟'
+      }
+    };
+
+    let currentPlaying = null;
+
+    // Initialize audio
+    audioPlayer.volume = 0.7;
+
     // Floating particles
     function createParticles() {
       const particlesContainer = document.getElementById('particles');
@@ -73,26 +139,134 @@
       }, 2000);
     }
 
-    // Emotion icon hover and click
+    // Emotion icon effects and audio
     function addEmotionEffects() {
       const emotions = document.querySelectorAll('.emotion-icon');
       emotions.forEach(emotion => {
         emotion.addEventListener('mouseenter', () => {
-          emotion.style.transform = 'scale(1.3) rotate(15deg)';
+          if (!emotion.classList.contains('playing')) {
+            emotion.style.transform = 'scale(1.3) rotate(15deg)';
+          }
         });
         
         emotion.addEventListener('mouseleave', () => {
-          emotion.style.transform = 'scale(1) rotate(0deg)';
+          if (!emotion.classList.contains('playing')) {
+            emotion.style.transform = 'scale(1) rotate(0deg)';
+          }
         });
         
         emotion.addEventListener('click', () => {
-          emotion.classList.add('pulse');
-          setTimeout(() => {
-            emotion.classList.remove('pulse');
-          }, 2000);
+          const emotionType = emotion.dataset.emotion;
+          playEmotionSound(emotionType, emotion);
         });
       });
     }
+
+    // Play emotion sound
+    function playEmotionSound(emotionType, emotionElement) {
+      const sound = emotionSounds[emotionType];
+      if (!sound) return;
+
+      // Remove playing class from all emotions
+      document.querySelectorAll('.emotion-icon').forEach(el => {
+        el.classList.remove('playing');
+        el.style.transform = 'scale(1) rotate(0deg)';
+      });
+
+      // Stop current audio
+      audioPlayer.pause();
+      
+      // Set new audio
+      audioPlayer.src = sound.src;
+      currentEmoji.textContent = sound.emoji;
+      currentSong.textContent = sound.title;
+      
+      // Add playing class to current emotion
+      emotionElement.classList.add('playing');
+      currentPlaying = emotionElement;
+      
+      // Show audio controls
+      audioControls.classList.add('show');
+      
+      // Play audio
+      audioPlayer.play().catch(e => {
+        console.log('Audio play failed:', e);
+        // For demo purposes, we'll just show the controls even if audio fails
+      });
+      
+      playPauseBtn.textContent = '⏸️';
+    }
+
+    // Play/Pause button
+    playPauseBtn.addEventListener('click', () => {
+      if (audioPlayer.paused) {
+        audioPlayer.play().catch(e => console.log('Play failed:', e));
+        playPauseBtn.textContent = '⏸️';
+      } else {
+        audioPlayer.pause();
+        playPauseBtn.textContent = '▶️';
+      }
+    });
+
+    // Volume control
+    volumeSlider.addEventListener('input', (e) => {
+      audioPlayer.volume = e.target.value / 100;
+    });
+
+    // Progress bar
+    audioPlayer.addEventListener('timeupdate', () => {
+      if (audioPlayer.duration) {
+        const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+        progressBar.style.width = progress + '%';
+      }
+    });
+
+    // Progress bar click
+    progressContainer.addEventListener('click', (e) => {
+      if (audioPlayer.duration) {
+        const rect = progressContainer.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        const newTime = (clickX / width) * audioPlayer.duration;
+        audioPlayer.currentTime = newTime;
+      }
+    });
+
+    // Audio events
+    audioPlayer.addEventListener('ended', () => {
+      playPauseBtn.textContent = '▶️';
+      progressBar.style.width = '0%';
+      if (currentPlaying) {
+        currentPlaying.classList.remove('playing');
+        currentPlaying.style.transform = 'scale(1) rotate(0deg)';
+      }
+    });
+
+    audioPlayer.addEventListener('pause', () => {
+      playPauseBtn.textContent = '▶️';
+      if (currentPlaying) {
+        currentPlaying.classList.remove('playing');
+        currentPlaying.style.transform = 'scale(1) rotate(0deg)';
+      }
+    });
+
+    audioPlayer.addEventListener('play', () => {
+      playPauseBtn.textContent = '⏸️';
+      if (currentPlaying) {
+        currentPlaying.classList.add('playing');
+      }
+    });
+
+    // Close button
+    closeBtn.addEventListener('click', () => {
+      audioPlayer.pause();
+      audioControls.classList.remove('show');
+      if (currentPlaying) {
+        currentPlaying.classList.remove('playing');
+        currentPlaying.style.transform = 'scale(1) rotate(0deg)';
+        currentPlaying = null;
+      }
+    });
 
     // Button ripple effect
     function addRippleEffect() {
