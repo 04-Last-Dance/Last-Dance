@@ -1,15 +1,14 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 from flask import current_app
+from config.firebase_config import db
 
 # Firebase 앱이 이미 초기화되어 있는지 확인
 try:
     firebase_admin.get_app()
 except ValueError:
-    cred = credentials.Certificate("firebase-auth.json")
-    firebase_admin.initialize_app(cred)
-
-db = firestore.client()
+    print("❌ Firebase가 초기화되지 않았습니다. config/firebase_config.py를 먼저 임포트하세요.")
+    raise
 
 def verify_token(token):
     """Firebase ID 토큰을 검증합니다."""
