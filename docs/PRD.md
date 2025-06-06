@@ -1,6 +1,4 @@
-# Product Requirements Document (PRD)
-
-## 🧩 프로젝트명: Last Dance (마지막 춤)
+# 🧩 프로젝트명: Last Dance (마지막 춤)
 
 ## 🔍 문제 정의
 
