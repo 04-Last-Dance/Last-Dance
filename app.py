@@ -24,6 +24,7 @@ app = Flask(__name__)
 CORS(app)
 configure_app(app)  # settings.py의 설정 적용
 
+
 # Firestore 클라이언트를 앱 설정에 저장
 app.config['db'] = db
 
