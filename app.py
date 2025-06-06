@@ -9,6 +9,7 @@ from routes.diary_routes import diary_bp
 from routes.music_routes import music_bp
 from routes.public import public_bp
 from routes.profile import profile_bp
+from config.firebase_config import db  # Firebase 설정 임포트
 
 from spotipy.oauth2 import SpotifyOAuth
 from config.settings import configure_app
@@ -23,17 +24,8 @@ app = Flask(__name__)
 CORS(app)
 configure_app(app)  # settings.py의 설정 적용
 
-# Firebase 초기화
-try:
-    # Firebase 인증 키 파일 경로 (app.py와 같은 폴더에 위치)
-    cred = credentials.Certificate("firebase-auth.json")
-    firebase_admin.initialize_app(cred)
-    print("✅ Firebase 초기화 완료")
-except Exception as e:
-    print(f"❌ Firebase 초기화 실패: {e}")
-
-# Firestore 클라이언트
-db = firestore.client()
+# Firestore 클라이언트를 앱 설정에 저장
+app.config['db'] = db
 
 # 블루프린트 등록
 app.register_blueprint(auth_bp)
