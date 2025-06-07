@@ -5,6 +5,8 @@ public_bp = Blueprint('public', __name__)
 
 @public_bp.route('/')
 def home():
+    if 'user' in session:
+        return redirect(url_for('public.dashboard'))
     return render_template('home.html')
 
 @public_bp.route('/login')
