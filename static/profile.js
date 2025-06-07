@@ -99,9 +99,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showMessage(deleteMessage, '계정이 성공적으로 삭제되었습니다. 잠시 후 로그인 페이지로 이동합니다.', 'success');
                     
-                    // 3초 후 로그인 페이지로 리디렉션
+                    // 3초 후 홈페이지로 리디렉션
                     setTimeout(() => {
-                        window.location.href = '/login';
+                        window.location.href = '/';
                     }, 3000);
                 } else {
                     showMessage(deleteMessage, '계정 삭제 실패: ' + data.error, 'error');
