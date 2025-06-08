@@ -1,82 +1,211 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Last Dance -임시 대시보드</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        h1 {
-            margin: 0;
-        }
-        .content {
-            margin: 20px 0;
-        }
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 0;
-            background-color: #4285f4;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-        }
-        .button.red {
-            background-color: #ea4335;
-        }
-        .button:hover {
-            opacity: 0.9;
-        }
-        .card {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Last Dance - 감정 기반 음악 추천</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}" />
 </head>
 <body>
-    <div class="header">
-        <h1>Last Dance -임시 대시보드</h1>
-        <a href="{{ url_for('public.logout') }}" class="button red">로그아웃</a>
-        <a href="{{ url_for('profile.profile') }}" class="button red">프로필</a>
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="logo">Last Dance</div>
+        <div class="logo-subtitle">감정 기반 음악 추천</div>
+      </div>
+      <div class="header-buttons">
+        <a href="{{ url_for('profile.profile') }}" class="btn btn-primary">프로필</a>
+        <a href="{{ url_for('public.logout') }}" class="btn btn-red">로그아웃</a>
+      </div>
     </div>
-    
-    <div class="content">
-        <div class="card">
-            <h2>내 정보</h2>
-            <p>이메일: {{ session['user']['email'] if session.get('user') and session['user'].get('email') else '로그인 필요' }}</p>
-        </div>
-        
-        <div class="card">
-            <h2>일기 작성</h2>
-            <p>오늘의 감정을 일기로 작성하고, 감정에 맞는 음악을 추천받으세요.</p>
-            <button class="button" onclick="alert('일기 작성 기능은 개발 중입니다.')">일기 작성하기</button>
-        </div>
-        
-        <div class="card">
-            <h2>내 일기 목록</h2>
-            <p>아직 작성된 일기가 없습니다.</p>
-        </div>
-        
-        <div class="card">
-            <h2>추천 음악</h2>
-            <p>일기를 작성하면 감정에 맞는 음악을 추천해 드립니다.</p>
-        </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    <!-- Welcome -->
+    <div class="welcome-section">
+      <h1 class="welcome-title">안녕하세요! 👋</h1>
+      <p class="welcome-text">오늘 하루는 어떠셨나요? 일기를 작성하고 맞춤 음악을 들어보세요.</p>
+      <div class="user-info">
+        <p class="user-email">
+          <strong>이메일:</strong>
+          <span class="email-value" id="userEmail">{{ session['user']['email'] if session.get('user') and session['user'].get('email') else '로그인 필요' }}</span>
+        </p>
+      </div>
     </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button onclick="writeDiary()" class="action-card">
+        <div class="action-content">
+          <div class="action-icon">✏️</div>
+          <div class="action-text"><h3>새 일기 작성</h3><p>오늘의 감정을 기록해보세요</p></div>
+        </div>
+      </button>
+      <button onclick="showRecommendedMusic()" class="action-card blue">
+        <div class="action-content">
+          <div class="action-icon">🎵</div>
+          <div class="action-text"><h3>추천 음악</h3><p>감정에 맞는 음악 듣기</p></div>
+        </div>
+      </button>
+      <button onclick="showEmotionCalendar()" class="action-card green">
+        <div class="action-content">
+          <div class="action-icon">📅</div>
+          <div class="action-text"><h3>감정 캘린더</h3><p>감정 변화 추이 보기</p></div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Left Column -->
+      <div class="left-column">
+        <!-- 최근 일기 (더미 제거) -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📖 최근 일기</h2>
+            <a href="#" class="card-link">모두 보기</a>
+          </div>
+          <div class="diary-list">
+            <div class="empty-state">
+              <div class="empty-icon">📝</div>
+              <p>작성한 일기가 없습니다.</p>
+              <a href="#" onclick="writeDiary()" class="empty-link">새 일기 작성하기</a>
+            </div>
+          </div>
+        </div>
+        <!-- 감정 추이 -->
+        <div class="card">
+          <h2 class="card-title">📈 이번 주 감정 추이</h2>
+          <div class="weekly-chart">
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">월</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">화</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">수</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">목</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">금</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">토</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">일</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="right-column">
+        <!-- 오늘의 감정 -->
+        <div class="card">
+          <h2 class="card-title">❤️ 오늘의 감정</h2>
+          <div class="emotion-display">
+            <div class="emotion-large">😐</div>
+            <div class="emotion-tag emotion-neutral">중립</div>
+          </div>
+        </div>
+
+        <!-- 스포티파이 추천 음악 -->
+        <div class="card">
+          <h2 class="card-title">🎵 추천 음악</h2>
+          <div class="music-player" id="currentlyPlaying">
+            <div class="song-info">
+              <div class="song-title" id="currentSongTitle">재생 중인 음악 없음</div>
+              <div class="song-artist" id="currentSongArtist">-</div>
+            </div>
+            <div class="player-controls">
+              <button onclick="togglePlay()" class="control-btn"><span id="playIcon">▶️</span></button>
+            </div>
+          </div>
+          <div class="music-list" id="musicList">
+            <p>음악을 불러오는 중입니다...</p>
+          </div>
+        </div>
+
+        <!-- 이번 달 통계 -->
+        <div class="card">
+          <h2 class="card-title">📊 이번 달 통계</h2>
+          <div class="stats-list">
+            <div class="stat-item"><span class="stat-label">작성한 일기</span><span class="stat-value">0개</span></div>
+            <div class="stat-item"><span class="stat-label">평균 감정 점수</span><span class="stat-value">-</span></div>
+            <div class="stat-item"><span class="stat-label">들은 음악</span><span class="stat-value">0곡</span></div>
+            <div class="stat-item"><span class="stat-label">가장 많은 감정</span><span class="stat-value">😐 중립</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 스크립트 -->
+<script>
+  let currentAudio = new Audio();
+  let isPlaying = false;
+
+  async function loadSpotifyRecommendations(emotion = 'neutral') {
+    const list = document.getElementById('musicList');
+    list.innerHTML = '<p>불러오는 중...</p>';
+    try {
+      const res = await fetch(`/api/spotify/recommend?emotion=${emotion}`);
+      const tracks = await res.json();
+      if (!tracks.length) {
+        list.innerHTML = '<p>추천 음악이 없습니다.</p>';
+        return;
+      }
+      list.innerHTML = '';
+      tracks.forEach(track => {
+        const item = document.createElement('div');
+        item.className = 'music-item';
+        item.innerHTML = `
+          <div class="music-info">
+            <h4>${track.title}</h4>
+            <div class="artist">${track.artist}</div>
+            <div class="reason">${track.reason || '스포티파이 추천'}</div>
+          </div>
+          <span class="play-icon">▶️</span>
+        `;
+        item.onclick = () => playMusic(track.title, track.artist, track.url);
+        list.appendChild(item);
+      });
+    } catch (e) {
+      list.innerHTML = '<p>음악을 불러오는 중 오류가 발생했습니다.</p>';
+      console.error(e);
+    }
+  }
+
+  function playMusic(title, artist, url) {
+    if (!url) return alert('해당 곡은 미리듣기 URL이 없습니다.');
+    currentAudio.src = url;
+    currentAudio.play();
+    isPlaying = true;
+    document.getElementById('currentSongTitle').textContent = title;
+    document.getElementById('currentSongArtist').textContent = artist;
+    updatePlayIcon();
+  }
+
+  function togglePlay() {
+    if (!currentAudio.src) return;
+    isPlaying = !isPlaying;
+    isPlaying ? currentAudio.play() : currentAudio.pause();
+    updatePlayIcon();
+  }
+
+  function updatePlayIcon() {
+    document.getElementById('playIcon').textContent = isPlaying ? '⏸️' : '▶️';
+  }
+
+  function writeDiary() {
+    alert('일기 작성 페이지로 이동합니다. (개발 중)');
+  }
+
+  function showRecommendedMusic() {
+    alert('추천 음악 페이지로 이동합니다. (개발 중)');
+  }
+
+  function showEmotionCalendar() {
+    alert('감정 캘린더 페이지로 이동합니다. (개발 중)');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadSpotifyRecommendations('neutral');
+  });
+</script>
 </body>
 </html>
