@@ -29,8 +29,24 @@
     </div>
 
     <div class="buttons">
-      <a href="{{ url_for('public.login') }}" class="button">로그인</a>
-      <a href="{{ url_for('public.signup') }}" class="button">회원가입</a>
+      <button class="button" onclick="openLoginModal()">로그인</button>
+      <button class="button" onclick="openSignupModal()">회원가입</button>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+      <iframe src="{{ url_for('public.login') }}" frameborder="0" class="modal-iframe"></iframe>
+    </div>
+  </div>
+
+  <!-- 회원가입 모달 -->
+  <div class="modal-overlay" id="signupModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('signupModal')">&times;</button>
+      <iframe src="{{ url_for('public.signup') }}" frameborder="0" class="modal-iframe"></iframe>
     </div>
   </div>
 
@@ -76,8 +92,8 @@
         emoji: '😊'
       },
       calm: {
-        src: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', // 실제 mp3 파일 경로로 교체하세요
-        title: 'Peaceful Ambient',
+        src: 'static/audio/海願.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: '海願',
         emoji: '😌'
       },
       love: {
@@ -91,8 +107,8 @@
         emoji: '🌙'
       },
       hopeful: {
-        src: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3', // 실제 mp3 파일 경로로 교체하세요
-        title: 'Inspiring Orchestra',
+        src: 'static/audio/SDVX_III_Everlasting_Message_NOFX.mp3', // 실제 mp3 파일 경로로 교체하세요
+        title: 'EVERLASTING MESSAGE',
         emoji: '🌟'
       }
     };
@@ -312,12 +328,36 @@
       document.head.appendChild(style);
     }
 
-    // Mouse parallax effect
-    document.addEventListener('mousemove', (e) => {
-      const container = document.querySelector('.container');
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = (e.clientY / window.innerHeight) * 2 - 1;
-      container.style.transform = `translate(${x * 10}px, ${y * 10}px)`;
+    // 모달 관리 함수들
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function openSignupModal() {
+      document.getElementById('signupModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    // iframe에서 인증 성공 메시지 받기
+    window.addEventListener('message', function(event) {
+      if (event.data.type === 'AUTH_SUCCESS') {
+        closeModal('loginModal');
+        closeModal('signupModal');
+        window.location.href = '/dashboard';
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      createParticles();
+      createMusicNotes();
+      addEmotionEffects();
+      addRippleEffect();
     });
 
     // Init all
