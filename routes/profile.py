@@ -20,10 +20,9 @@ def profile():
     is_email_signin = provider_id == 'password'
     
     # Firestore에서 사용자 데이터 가져오기
-    db = firestore.client()
-    user_doc = db.collection('users').document(user_id).get()
-    user_data = user_doc.to_dict() if user_doc.exists else {}
-    
+    user_data = user_repository.get_user_data(user_id)  
+
+
     nickname = user_data.get('nickname', email.split('@')[0])
     
     # 감정 상태 가져오기 (더미 데이터)
@@ -53,10 +52,7 @@ def update_nickname():
     nickname = data['nickname']
     
     # Firestore에 닉네임 업데이트
-    db = firestore.client()
-    db.collection('users').document(user_id).update({
-        'nickname': nickname
-    })
+    user_repository.update_nickname(user_id, nickname)
     
     return jsonify({'success': True, 'nickname': nickname})
 
