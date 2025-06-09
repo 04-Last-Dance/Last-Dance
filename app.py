@@ -35,6 +35,7 @@ app.register_blueprint(music_bp, url_prefix='/api/music')
 app.register_blueprint(public_bp)
 app.register_blueprint(profile_bp)
 
+
 # Firebase 설정 반환 엔드포인트
 @app.route('/api/firebase-config')
 def get_firebase_config():
@@ -48,6 +49,8 @@ def get_firebase_config():
         "appId": os.getenv('FIREBASE_APP_ID')
     }
     return jsonify(config)
+
+print("🎯 redirect_uri from .env:", os.getenv("SPOTIFY_REDIRECT_URI"))
 
 # Spotify OAuth 설정
 sp_oauth = SpotifyOAuth(
