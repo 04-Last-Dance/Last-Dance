@@ -108,7 +108,8 @@ def submit_diary():
 
 @diary_bp.route('/recent', methods=['GET'])
 def get_recent_diaries():
-    user_uid = get_current_user_uid()
+    user = session.get('user', {})
+    user_uid = user.get('uid')
     if not user_uid:
         return jsonify({'error': '로그인이 필요합니다.'}), 401
     
@@ -122,9 +123,9 @@ def get_recent_diaries():
         doc = d.to_dict()
         result.append({
             'content': doc.get('content'),
-            'main_emotion': emotion_translation.get(doc.get('main_emotion', ''), doc.get('main_emotion')),
-            'score': doc.get('score'),
-            'timestamp': doc.get('timestamp').isoformat() if doc.get('timestamp') else ''
+            'emotion': emotion_translation.get(doc.get('main_emotion', ''), doc.get('main_emotion')),  # emotion 필드로 변경
+            'created_at': doc.get('timestamp').isoformat() if doc.get('timestamp') else '',  # timestamp를 created_at으로 매핑
+            'date': doc.get('timestamp').isoformat() if doc.get('timestamp') else ''  # date 필드 추가
         })
     return jsonify(result)
 
