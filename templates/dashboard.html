@@ -4,7 +4,518 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Last Dance - 감정 기반 음악 추천</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='dashborad.css') }}" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(-45deg, #fff5e6, #ffe4d1, #ffd4b3, #ffeaa7, #fdcb6e, #e17055);
+      background-size: 400% 400%;
+      animation: gradientShift 60s ease infinite;
+      color: #333;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(255, 220, 180, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 200, 150, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(255, 230, 200, 0.1) 0%, transparent 50%);
+      animation: floatingBubbles 80s ease-in-out infinite;
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(1px 1px at 20px 30px, rgba(255, 200, 150, 0.2), transparent),
+        radial-gradient(1px 1px at 40px 70px, rgba(255, 180, 120, 0.15), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(255, 220, 180, 0.12), transparent);
+      background-repeat: repeat;
+      background-size: 300px 200px;
+      animation: sparkleFloat 30s linear infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes floatingBubbles {
+      0%, 100% { 
+        transform: translate(0px, 0px) scale(1) rotate(0deg); 
+        opacity: 0.6;
+      }
+      25% { 
+        transform: translate(30px, -30px) scale(1.1) rotate(90deg); 
+        opacity: 0.3;
+      }
+      50% { 
+        transform: translate(-20px, 20px) scale(0.9) rotate(180deg); 
+        opacity: 0.8;
+      }
+      75% { 
+        transform: translate(40px, 10px) scale(1.05) rotate(270deg); 
+        opacity: 0.4;
+      }
+    }
+
+    @keyframes sparkleFloat {
+      0% { transform: translateY(0px) translateX(0px); }
+      100% { transform: translateY(-100px) translateX(50px); }
+    }
+
+    @keyframes softFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 4px 20px rgba(255, 255, 255, 0.05); }
+      50% { box-shadow: 0 6px 25px rgba(255, 255, 255, 0.1); }
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      animation: softFloat 15s ease-in-out infinite;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-section {
+      color: #8b4513;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: bold;
+      background: linear-gradient(45deg, #8b4513, #cd853f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary {
+      background: rgba(139, 69, 19, 0.15);
+      color: #8b4513;
+    }
+
+    .btn-red {
+      background: rgba(205, 92, 92, 0.15);
+      color: #cd5c5c;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .main {
+      padding: 2rem 0;
+    }
+
+    .welcome-section {
+      text-align: center;
+      padding: 3rem 0;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      animation: pulseGlow 8s ease-in-out infinite;
+    }
+
+    .welcome-title {
+      font-size: 3rem;
+      color: #8b4513;
+      margin-bottom: 1rem;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-text {
+      font-size: 1.2rem;
+      color: #a0522d;
+      margin-bottom: 1.5rem;
+    }
+
+    .user-info {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: 0 auto;
+      display: none;
+    }
+
+    .user-email {
+      color: white;
+      font-size: 1rem;
+      display: none;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .action-card {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 15px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: softFloat 20s ease-in-out infinite;
+    }
+
+    .action-card:nth-child(2) {
+      animation-delay: -5s;
+    }
+
+    .action-card:nth-child(3) {
+      animation-delay: -10s;
+    }
+
+    .action-card:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .action-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #8b4513;
+    }
+
+    .action-icon {
+      font-size: 2.5rem;
+    }
+
+    .action-text h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.3rem;
+    }
+
+    .action-text p {
+      opacity: 0.8;
+      margin: 0;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+    }
+
+    .left-column, .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 15px;
+      padding: 1.5rem;
+      animation: softFloat 25s ease-in-out infinite;
+    }
+
+    .card:nth-child(odd) {
+      animation-delay: -3s;
+    }
+
+    .card:nth-child(even) {
+      animation-delay: -8s;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      color: #8b4513;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-link {
+      color: #cd853f;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .card-link:hover {
+      color: #8b4513;
+    }
+
+    .diary-list {
+      color: #8b4513;
+    }
+
+    .diary-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .diary-snippet {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .diary-meta {
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .weekly-chart {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .chart-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-bar {
+      width: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      transition: height 0.3s ease;
+    }
+
+    .chart-emoji {
+      font-size: 1.5rem;
+    }
+
+    .chart-label {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.8rem;
+    }
+
+    .emotion-display {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .emotion-large {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .emotion-tag {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 1.1rem;
+    }
+
+    .music-player {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+    }
+
+    .song-info {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .song-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .song-artist {
+      opacity: 0.7;
+    }
+
+    .player-controls {
+      text-align: center;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    .music-list {
+      color: white;
+    }
+
+    .music-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .music-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+    }
+
+    .music-info h4 {
+      margin-bottom: 0.3rem;
+      color: white;
+    }
+
+    .artist {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 0.2rem;
+    }
+
+    .reason {
+      font-size: 0.8rem;
+      opacity: 0.6;
+    }
+
+    .play-icon {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .play-icon:hover {
+      color: white;
+      transform: scale(1.2);
+    }
+
+    .stats-list {
+      color: white;
+    }
+
+    .stat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-item:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      opacity: 0.8;
+    }
+
+    .stat-value {
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-title {
+        font-size: 2rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+  </style>
 </head>
 <body>
 <header class="header">
@@ -15,8 +526,8 @@
         <div class="logo-subtitle">감정 기반 음악 추천</div>
       </div>
       <div class="header-buttons">
-        <a href="{{ url_for('profile.profile') }}" class="btn btn-primary">프로필</a>
-        <a href="{{ url_for('public.logout') }}" class="btn btn-red">로그아웃</a>
+        <a href="/profile" class="btn btn-primary">프로필</a>
+        <a href="/logout" class="btn btn-red">로그아웃</a>
       </div>
     </div>
   </div>
@@ -24,19 +535,11 @@
 
 <main class="main">
   <div class="container">
-    <!-- Welcome -->
     <div class="welcome-section">
       <h1 class="welcome-title">안녕하세요! 👋</h1>
       <p class="welcome-text">오늘 하루는 어떠셨나요? 일기를 작성하고 맞춤 음악을 들어보세요.</p>
-      <div class="user-info">
-        <p class="user-email">
-          <strong>이메일:</strong>
-          <span class="email-value" id="userEmail">{{ session['user']['email'] if session.get('user') and session['user'].get('email') else '로그인 필요' }}</span>
-        </p>
-      </div>
     </div>
 
-    <!-- Quick Actions -->
     <div class="quick-actions">
       <button onclick="writeDiary()" class="action-card">
         <div class="action-content">
@@ -58,75 +561,93 @@
       </button>
     </div>
 
-    <!-- Main Grid -->
     <div class="main-grid">
-      <!-- Left Column -->
       <div class="left-column">
-        <!-- 최근 일기 (더미 제거) -->
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">📖 최근 일기</h2>
-            <a href="#" class="card-link">모두 보기</a>
+            <a href="/api/diary/all" class="card-link">모두 보기</a>
           </div>
           <div class="diary-list">
-            <div class="empty-state">
-              <div class="empty-icon">📝</div>
-              <p>작성한 일기가 없습니다.</p>
-              <a href="#" onclick="writeDiary()" class="empty-link">새 일기 작성하기</a>
+            <!-- 초기 로딩 상태 표시 -->
+            <div class="diary-item">
+              <div class="diary-snippet">일기를 불러오는 중...</div>
             </div>
           </div>
         </div>
-        <!-- 감정 추이 -->
         <div class="card">
           <h2 class="card-title">📈 이번 주 감정 추이</h2>
           <div class="weekly-chart">
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">월</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">화</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">수</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">목</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">금</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">토</span></div>
-            <div class="chart-day"><div class="chart-bar" style="height: 0px;"></div><span class="chart-emoji">❓</span><span class="chart-label">일</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 60px;"></div><span class="chart-emoji">😄</span><span class="chart-label">월</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 40px;"></div><span class="chart-emoji">😐</span><span class="chart-label">화</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 70px;"></div><span class="chart-emoji">😄</span><span class="chart-label">수</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 35px;"></div><span class="chart-emoji">😢</span><span class="chart-label">목</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 55px;"></div><span class="chart-emoji">😊</span><span class="chart-label">금</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 80px;"></div><span class="chart-emoji">😄</span><span class="chart-label">토</span></div>
+            <div class="chart-day"><div class="chart-bar" style="height: 45px;"></div><span class="chart-emoji">😐</span><span class="chart-label">일</span></div>
           </div>
         </div>
       </div>
 
-      <!-- Right Column -->
       <div class="right-column">
-        <!-- 오늘의 감정 -->
         <div class="card">
           <h2 class="card-title">❤️ 오늘의 감정</h2>
           <div class="emotion-display">
-            <div class="emotion-large">😐</div>
-            <div class="emotion-tag emotion-neutral">중립</div>
+            <div class="emotion-large">😄</div>
+            <div class="emotion-tag emotion-neutral">기쁨</div>
           </div>
         </div>
 
-        <!-- 스포티파이 추천 음악 -->
         <div class="card">
           <h2 class="card-title">🎵 추천 음악</h2>
           <div class="music-player" id="currentlyPlaying">
             <div class="song-info">
-              <div class="song-title" id="currentSongTitle">재생 중인 음악 없음</div>
-              <div class="song-artist" id="currentSongArtist">-</div>
+              <div class="song-title" id="currentSongTitle">Happy - Pharrell Williams</div>
+              <div class="song-artist" id="currentSongArtist">Pharrell Williams</div>
             </div>
             <div class="player-controls">
               <button onclick="togglePlay()" class="control-btn"><span id="playIcon">▶️</span></button>
             </div>
           </div>
           <div class="music-list" id="musicList">
-            <p>음악을 불러오는 중입니다...</p>
+            <div class="music-item">
+              <div class="music-info">
+                <h4>Good as Hell</h4>
+                <div class="artist">Lizzo</div>
+                <div class="reason">기쁨에 어울리는 신나는 곡</div>
+              </div>
+              <a class="play-icon" href="#" target="_blank">▶️</a>
+            </div>
+            <div class="music-item">
+              <div class="music-info">
+                <h4>Can't Stop the Feeling!</h4>
+                <div class="artist">Justin Timberlake</div>
+                <div class="reason">긍정적인 에너지</div>
+              </div>
+              <a class="play-icon" href="#" target="_blank">▶️</a>
+            </div>
           </div>
         </div>
 
-        <!-- 이번 달 통계 -->
         <div class="card">
           <h2 class="card-title">📊 이번 달 통계</h2>
           <div class="stats-list">
-            <div class="stat-item"><span class="stat-label">작성한 일기</span><span class="stat-value">0개</span></div>
-            <div class="stat-item"><span class="stat-label">평균 감정 점수</span><span class="stat-value">-</span></div>
-            <div class="stat-item"><span class="stat-label">들은 음악</span><span class="stat-value">0곡</span></div>
-            <div class="stat-item"><span class="stat-label">가장 많은 감정</span><span class="stat-value">😐 중립</span></div>
+            <div class="stat-item">
+              <span class="stat-label">작성한 일기</span>
+              <span class="stat-value" id="stat-diary-count">18개</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">평균 감정 점수</span>
+              <span class="stat-value" id="stat-avg-score">0.73</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">들은 음악</span>
+              <span class="stat-value">보류</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">가장 많은 감정</span>
+              <span class="stat-value" id="stat-top-emotion">😄 기쁨</span>
+            </div>
           </div>
         </div>
       </div>
@@ -134,78 +655,193 @@
   </div>
 </main>
 
-<!-- 스크립트 -->
 <script>
-  let currentAudio = new Audio();
-  let isPlaying = false;
+let currentAudio = new Audio();
+let isPlaying = false;
 
-  async function loadSpotifyRecommendations(emotion = 'neutral') {
-    const list = document.getElementById('musicList');
-    list.innerHTML = '<p>불러오는 중...</p>';
-    try {
-      const res = await fetch(`/api/spotify/recommend?emotion=${emotion}`);
-      const tracks = await res.json();
-      if (!tracks.length) {
-        list.innerHTML = '<p>추천 음악이 없습니다.</p>';
-        return;
-      }
-      list.innerHTML = '';
-      tracks.forEach(track => {
-        const item = document.createElement('div');
-        item.className = 'music-item';
-        item.innerHTML = `
-          <div class="music-info">
-            <h4>${track.title}</h4>
-            <div class="artist">${track.artist}</div>
-            <div class="reason">${track.reason || '스포티파이 추천'}</div>
-          </div>
-          <span class="play-icon">▶️</span>
-        `;
-        item.onclick = () => playMusic(track.title, track.artist, track.url);
-        list.appendChild(item);
-      });
-    } catch (e) {
-      list.innerHTML = '<p>음악을 불러오는 중 오류가 발생했습니다.</p>';
-      console.error(e);
+async function loadTodayEmotion() {
+  try {
+    const res = await fetch('/api/diary/last-emotion');
+    const data = await res.json();
+    console.log('📌 마지막 감정:', data);
+
+    const emojiMap = {
+      neutral: '😐',
+      joy: '😄',
+      sadness: '😢',
+      anger: '😡',
+      fear: '😨',
+      disgust: '🤢',
+      surprise: '😲'
+    };
+
+    const emotion = data.main_emotion?.toLowerCase() || 'neutral';
+    const emoji = emojiMap[emotion] || '😐';
+    const krLabel = emotion_kr(emotion);
+
+    document.querySelector('.emotion-large').textContent = emoji;
+    document.querySelector('.emotion-tag').textContent = krLabel;
+  } catch (err) {
+    console.error('❌ 오늘의 감정 불러오기 실패:', err);
+  }
+}
+
+function emotion_kr(label) {
+  const map = {
+    neutral: '중립', joy: '기쁨', sadness: '슬픔', anger: '분노',
+    fear: '두려움', disgust: '혐오', surprise: '놀람'
+  };
+  return map[label] || '중립';
+}
+
+async function getLastEmotion() {
+  try {
+    const res = await fetch('/api/diary/last-emotion');
+    const data = await res.json();
+    return data.emotion || 'neutral';
+  } catch (err) {
+    console.error('감정 가져오기 실패:', err);
+    return 'neutral';
+  }
+}
+
+async function loadSpotifyRecommendations(emotion) {
+  const list = document.getElementById('musicList');
+  list.innerHTML = '<p>불러오는 중...</p>';
+
+  try {
+    const res = await fetch('/api/music/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ emotion })
+    });
+
+    const data = await res.json();
+    const tracks = data.recommendations;
+
+    if (!tracks.length) {
+      list.innerHTML = '<p>추천 음악이 없습니다.</p>';
+      return;
     }
-  }
 
-  function playMusic(title, artist, url) {
-    if (!url) return alert('해당 곡은 미리듣기 URL이 없습니다.');
-    currentAudio.src = url;
-    currentAudio.play();
-    isPlaying = true;
-    document.getElementById('currentSongTitle').textContent = title;
-    document.getElementById('currentSongArtist').textContent = artist;
-    updatePlayIcon();
+    list.innerHTML = '';
+    tracks.forEach(track => {
+      const item = document.createElement('div');
+      item.className = 'music-item';
+      item.innerHTML = `
+        <div class="music-info">
+          <h4>${track.title}</h4>
+          <div class="artist">${track.artist}</div>
+          <div class="reason">${track.reason || '스포티파이 추천'}</div>
+        </div>
+        <a class="play-icon" href="${track.url}" target="_blank">▶️</a>
+      `;
+      list.appendChild(item);
+    });
+  } catch (e) {
+    list.innerHTML = '<p>음악을 불러오는 중 오류가 발생했습니다.</p>';
+    console.error(e);
   }
+}
 
-  function togglePlay() {
-    if (!currentAudio.src) return;
-    isPlaying = !isPlaying;
-    isPlaying ? currentAudio.play() : currentAudio.pause();
-    updatePlayIcon();
+function togglePlay() {
+  if (!currentAudio.src) return;
+  isPlaying = !isPlaying;
+  isPlaying ? currentAudio.play() : currentAudio.pause();
+  document.getElementById('playIcon').textContent = isPlaying ? '⏸️' : '▶️';
+}
+
+function writeDiary() {
+  window.location.href = "/write-diary";
+}
+
+function showRecommendedMusic() {
+  loadSpotifyRecommendations();
+  window.scrollTo({ top: document.getElementById('musicList').offsetTop, behavior: 'smooth' });
+}
+
+function showEmotionCalendar() {
+  window.location.href = "/calendar";
+}
+
+async function loadRecentDiaries() {
+  const diaryList = document.querySelector('.diary-list');
+  
+  try {
+    diaryList.innerHTML = '<div class="diary-item"><div class="diary-snippet">일기를 불러오는 중...</div></div>';
+    
+    const response = await fetch('/api/diary/recent');
+    console.log('Response status:', response.status); // 디버깅용
+    
+    if (!response.ok) {
+      console.log('Response not OK:', await response.text()); // 에러 응답 내용 확인
+      throw new Error(`서버 오류: ${response.status}`);
+    }
+    
+    const diaries = await response.json();
+    console.log('Received diaries:', diaries); // 받은 데이터 확인
+    
+    if (!Array.isArray(diaries) || diaries.length === 0) {
+      diaryList.innerHTML = '<div class="diary-item"><div class="diary-snippet">작성된 일기가 없습니다.</div></div>';
+      return;
+    }
+
+    diaryList.innerHTML = diaries.map(diary => `
+      <div class="diary-item">
+        <div class="diary-date">${new Date(diary.date || diary.created_at).toLocaleDateString()}</div>
+        <div class="diary-snippet">${diary.content ? diary.content.substring(0, 50) + '...' : '내용 없음'}</div>
+        <div class="diary-emotion">${diary.emotion || '😐'}</div>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    console.error('일기 로딩 실패:', error);
+    diaryList.innerHTML = `<div class="diary-item"><div class="diary-snippet">일기를 불러오는데 실패했습니다. (${error.message})</div></div>`;
   }
+}
 
-  function updatePlayIcon() {
-    document.getElementById('playIcon').textContent = isPlaying ? '⏸️' : '▶️';
-  }
+async function loadWeeklyEmotions() {
+  const emojiMap = {
+    joy: "😄", sadness: "😢", anger: "😡", fear: "😨",
+    disgust: "🤢", surprise: "😲", neutral: "😐"
+  };
+  const response = await fetch('/api/diary/weekly-emotions');
+  const data = await response.json();
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dayEls = document.querySelectorAll('.weekly-chart .chart-day');
 
-  function writeDiary() {
-    alert('일기 작성 페이지로 이동합니다. (개발 중)');
-  }
-
-  function showRecommendedMusic() {
-    alert('추천 음악 페이지로 이동합니다. (개발 중)');
-  }
-
-  function showEmotionCalendar() {
-    alert('감정 캘린더 페이지로 이동합니다. (개발 중)');
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    loadSpotifyRecommendations('neutral');
+  dayEls.forEach((el, index) => {
+    const engDay = days[index];
+    const emoji = emojiMap[data[engDay]] || "❓";
+    el.querySelector('.chart-emoji').textContent = emoji;
   });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  loadRecentDiaries();
+  loadTodayEmotion();
+
+  const emotion = await getLastEmotion();
+  await loadSpotifyRecommendations(emotion);
+
+  try {
+    const res = await fetch("/api/diary/monthly-stats");
+    const data = await res.json();
+
+    const diaryCountEl = document.getElementById("stat-diary-count");
+    const avgScoreEl = document.getElementById("stat-avg-score");
+    const topEmotionEl = document.getElementById("stat-top-emotion");
+
+    if (diaryCountEl && avgScoreEl && topEmotionEl) {
+      diaryCountEl.innerText = data.diary_count + "개";
+      avgScoreEl.innerText = data.average_score;
+      topEmotionEl.innerText = `${data.most_common_emotion_emoji} ${data.most_common_emotion_kr}`;
+    }
+  } catch (err) {
+    console.error("📉 통계 불러오기 실패:", err);
+  }
+  loadWeeklyEmotions();
+});
 </script>
 </body>
 </html>
