@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘의 추천 음악 - Last Dance</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <style>
+    .container { max-width: 900px; margin: 40px auto; padding: 20px; }
+    .section { margin-bottom: 40px; }
+    .diary-box, .music-list { border: 1px solid #ddd; border-radius: 10px; padding: 20px; background: #fafafa; }
+    .emotion-result { font-size: 18px; margin-top: 10px; }
+    .music-item { margin-top: 15px; padding: 10px; border-bottom: 1px solid #ddd; }
+    .music-item:last-child { border-bottom: none; }
+    .music-title { font-size: 18px; font-weight: bold; }
+    .music-artist { font-size: 15px; color: #666; }
+    .back-btn { margin-top: 30px; display: inline-block; padding: 10px 20px; background-color: #4c6ef5; color: white; text-decoration: none; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎵 오늘의 감정 기반 추천 음악</h1>
+
+    <div class="section diary-box">
+      <h2>📘 오늘의 일기</h2>
+      <p>{{ diary_content }}</p>
+      <p class="emotion-result">🔍 감정 분석 결과: <strong>{{ emotion_emoji }} {{ emotion_label_kr }}</strong> (점수: {{ score | round(2) }})</p>
+    </div>
+
+    <div class="section music-list">
+      <h2>🎧 추천 음악 리스트</h2>
+      {% for track in recommendations %}
+        <div class="music-item">
+          <div class="music-title">{{ track.title }}</div>
+          <div class="music-artist">아티스트: {{ track.artist }}</div>
+          <a href="{{ track.url }}" target="_blank">스포티파이에서 듣기 ▶️</a>
+        </div>
+      {% else %}
+        <p>추천 음악이 없습니다.</p>
+      {% endfor %}
+    </div>
+
+    <a href="/dashboard" class="back-btn">← 대시보드로 돌아가기</a>
+  </div>
+</body>
+</html>
